@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { loginUser } from "../Api";
 import { Link, useNavigate } from "react-router-dom";
-import './style.css'
 
 export default function Login({ setIsLoggedIn }) {
   const [user, setUser] = useState({ email: "", password: "" });

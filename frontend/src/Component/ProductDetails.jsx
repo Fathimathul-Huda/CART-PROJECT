@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchProductById } from "../Api";
-import './style.css'
 
 export default function ProductDetails() {
   const { id } = useParams();

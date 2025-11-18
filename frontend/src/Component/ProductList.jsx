@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { deleteProduct } from "../Api";
-import './style.css'
 
 export default function ProductList() {
   const [products, setProducts] = useState([]);

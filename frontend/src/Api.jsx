@@ -1,4 +1,14 @@
-const API_URL = "http://localhost:3000/api";
+const API_URL = "http://localhost:3000"; // <-- changed to match backend that exposes /auth
+
+async function parseResponse(res) {
+  const text = await res.text();
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch (e) {
+    // attach raw text for easier debugging when server returns HTML/error pages
+    throw new Error(`Invalid JSON response (${res.status}): ${text}`);
+  }
+}
 
 // 🟢 REGISTER
 export const registerUser = async (user) => {
@@ -7,7 +17,8 @@ export const registerUser = async (user) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(user),
   });
-  return res.json();
+  if (!res.ok) throw await parseResponse(res);
+  return parseResponse(res);
 };
 
 // 🟢 LOGIN
@@ -17,18 +28,21 @@ export const loginUser = async (user) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(user),
   });
-  return res.json();
+  if (!res.ok) throw await parseResponse(res);
+  return parseResponse(res);
 };
 
 // 🟢 GET PRODUCTS
 export const fetchProducts = async () => {
   const res = await fetch(`${API_URL}/product`);
+  if (!res.ok) throw new Error(`Fetch products failed: ${res.status}`);
   return res.json();
 };
 
 // 🟢 GET SINGLE PRODUCT
 export const fetchProductById = async (id) => {
   const res = await fetch(`${API_URL}/product/${id}`);
+  if (!res.ok) throw new Error(`Fetch product failed: ${res.status}`);
   return res.json();
 };
 
@@ -39,6 +53,7 @@ export const addProduct = async (formData, token) => {
     headers: { Authorization: `Bearer ${token}` },
     body: formData,
   });
+  if (!res.ok) throw new Error(`Add product failed: ${res.status}`);
   return res.json();
 };
 
@@ -49,6 +64,7 @@ export const updateProduct = async (id, formData, token) => {
     headers: { Authorization: `Bearer ${token}` },
     body: formData,
   });
+  if (!res.ok) throw new Error(`Update product failed: ${res.status}`);
   return res.json();
 };
 
@@ -58,5 +74,6 @@ export const deleteProduct = async (id, token) => {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
+  if (!res.ok) throw new Error(`Delete product failed: ${res.status}`);
   return res.json();
 };
