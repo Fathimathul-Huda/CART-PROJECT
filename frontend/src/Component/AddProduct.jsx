@@ -6,6 +6,7 @@ export default function AddProduct() {
     quantity: "",
     description: "",
     price: "",
+    image: ""
   });
   const [image, setImage] = useState(null);
   const token = localStorage.getItem("accessToken");
@@ -15,43 +16,49 @@ export default function AddProduct() {
   };
 
   const handleFileChange = (e) => {
-    setImage(e.target.files[0]);
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImage(reader.result); // base64 string
+    };
+
+    reader.readAsDataURL(file); // convert to base64
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("name", product.name);
-    formData.append("quantity", product.quantity);
-    formData.append("description", product.description);
-    formData.append("price", product.price);
-    if (image) formData.append("image", image);
+    const body = {
+      name: product.name,
+      quantity: product.quantity,
+      description: product.description,
+      price: product.price,
+      image: image, // base64 string
+    };
 
     try {
-      const res = await fetch("http://localhost:3000/api/product", {
+      const res = await fetch("http://localhost:3000/product", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(body),
       });
 
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        console.error("❌ Non-JSON response:", text);
-        alert("Server returned invalid response");
-        return;
-      }
-
+      const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to add product");
+
       alert("✅ " + data.message);
     } catch (err) {
       console.error("❌ Add product error:", err);
       alert("Error: " + err.message);
     }
   };
+
 
   return (
     <div className="container mt-4">

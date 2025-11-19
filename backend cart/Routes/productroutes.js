@@ -28,7 +28,7 @@ router.get("/:id", async (req, res) => {
 // CREATE product (protected)
 router.post("/", authenticate, async (req, res) => {
   try {
-    const { name, price, description, quantity } = req.body;
+    const { name, price, description, quantity, image } = req.body;
     if (!name || !price || !quantity) {
       return res.status(400).json({ message: "Name, price and quantity are required" });
     }
@@ -38,7 +38,9 @@ router.post("/", authenticate, async (req, res) => {
       price,
       description,
       quantity,
-      creatorId: req.user.id
+      creatorId: req.user.id,
+      image
+
     });
     await product.save();
     res.status(201).json({ message: "Product created successfully", product });

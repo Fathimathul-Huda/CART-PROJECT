@@ -7,9 +7,10 @@ export default function ProductList() {
   const token = localStorage.getItem("accessToken");
 
   const fetchData = async () => {
-    const res = await fetch("http://localhost:3000/api/product");
+    const res = await fetch("http://localhost:3000/product/view");
     const data = await res.json();
     setProducts(data);
+    console.log(data);  
   };
 
   useEffect(() => {
@@ -39,7 +40,7 @@ export default function ProductList() {
               <img
                 src={
                   p.image
-                    ? `http://localhost:p000${p.image}`
+                    ? `${p.image}`
                     : "https://via.placeholder.com/300x200"
                 }
                 className="card-img-top"
