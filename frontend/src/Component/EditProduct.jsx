@@ -8,49 +8,61 @@ export default function EditProduct() {
   const token = localStorage.getItem("accessToken");
 
   const [product, setProduct] = useState({
-    productname: "",
+    name: "",
     quantity: "",
     description: "",
     price: "",
   });
-  const [image, setImage] = useState(null);
 
   useEffect(() => {
-    fetchProductById(id).then(setProduct);
+    fetchProductById(id).then((data) => {
+      setProduct({
+        name: data.name || "",
+        quantity: data.quantity || "",
+        description: data.description || "",
+        price: data.price || "",
+      });
+    });
   }, [id]);
 
   const handleChange = (e) => {
     setProduct({ ...product, [e.target.name]: e.target.value });
   };
 
-  const handleFileChange = (e) => setImage(e.target.files[0]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("productname", product.productname);
-    formData.append("quantity", product.quantity);
-    formData.append("description", product.description);
-    formData.append("price", product.price);
-    if (image) formData.append("image", image);
 
-    const res = await updateProduct(id, formData, token);
-    alert(res.message);
-    navigate("/");
+    const updatedData = {
+      name: product.name,
+      quantity: product.quantity,
+      description: product.description,
+      price: product.price,
+    };
+
+    try {
+      const res = await updateProduct(id, updatedData, token);
+      alert(res.message);
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update product");
+    }
   };
 
   return (
     <div className="container mt-4">
       <div className="card p-4 shadow-sm">
         <h3 className="text-center mb-3">Edit Product</h3>
+
         <form onSubmit={handleSubmit}>
           <input
-            name="productname"
-            value={product.productname}
+            name="name"
+            value={product.name}
             onChange={handleChange}
             className="form-control mb-3"
             placeholder="Product Name"
           />
+
           <input
             name="quantity"
             value={product.quantity}
@@ -58,6 +70,7 @@ export default function EditProduct() {
             className="form-control mb-3"
             placeholder="Quantity"
           />
+
           <textarea
             name="description"
             value={product.description}
@@ -65,6 +78,7 @@ export default function EditProduct() {
             className="form-control mb-3"
             placeholder="Description"
           />
+
           <input
             type="number"
             name="price"
@@ -73,12 +87,7 @@ export default function EditProduct() {
             className="form-control mb-3"
             placeholder="Price"
           />
-          <input
-            type="file"
-            className="form-control mb-3"
-            accept="image/*"
-            onChange={handleFileChange}
-          />
+
           <button type="submit" className="btn btn-success w-100">
             Save Changes
           </button>

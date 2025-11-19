@@ -58,15 +58,20 @@ export const addProduct = async (formData, token) => {
 };
 
 // 🟢 UPDATE PRODUCT
-export const updateProduct = async (id, formData, token) => {
+export const updateProduct = async (id, data, token) => {
   const res = await fetch(`${API_URL}/product/${id}`, {
     method: "PUT",
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
   });
+
   if (!res.ok) throw new Error(`Update product failed: ${res.status}`);
   return res.json();
 };
+
 
 // 🟢 DELETE PRODUCT
 export const deleteProduct = async (id, token) => {
