@@ -1,51 +1,64 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import Navbar from './Component/Navbar';
-import Login from './Component/Login';
-import Register from './Component/Register';
-import EditProduct from './Component/EditProduct';
-import ProductList from './Component/ProductList';
-import ProductDetails from './Component/ProductDetails';
-import AddProduct from './Component/AddProduct';
-import Home from './Component/Routes/Home';
-import About from './Component/Routes/About';
-import Contact from './Component/Routes/Contact';
-import Discover from './Component/Routes/Discover'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import AuthProvider from "./Authcontext";
+import Navbar from "./Component/Navbar";
+import ProtectedRoute from "./Component/ProtectedRoutes";
 
-function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+import Login from "./Component/Login";
+import Register from "./Component/Register";
+import AdminDashboard from "./Component/AdminDashboard";
+import AddProduct from "./Component/AddProduct";
+import EditProduct from "./Component/EditProduct";
+import UserDashboard from "./Component/Routes/UserDashboard";
+import Cart from "./Component/Routes/Cart";
 
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    setIsLoggedIn(!!token);
-  }, []);
-
-  // Render Navbar only when on "/" and user is logged in
-  function NavbarContainer({ isLoggedIn }) {
-    const location = useLocation();
-    if (!isLoggedIn) return null;
-    return location.pathname === '/' ? <Navbar isLoggedIn={isLoggedIn} /> : null;
-  }
-
+export default function App() {
   return (
-    <Router>
-      <NavbarContainer isLoggedIn={isLoggedIn} />
-      <div className="container mt-4">
+    <AuthProvider>
+      <BrowserRouter>
+        <Navbar />
         <Routes>
-          <Route path="/" element={isLoggedIn ? <ProductList /> : <Navigate to="/login" />} />
-          <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
+          {/* User side */}
+          <Route path="/" element={<UserDashboard />} />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute>
+                <Cart />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Auth */}
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/product/:id" element={isLoggedIn ? <ProductDetails /> : <Navigate to="/login" />} />
-          <Route path="/add" element={isLoggedIn ? <AddProduct /> : <Navigate to="/login" />} />
-          <Route path="/edit/:id" element={isLoggedIn ? <EditProduct /> : <Navigate to="/login" />} />
-          <Route path='/Home' element={<Home/>}/>
-          <Route path='/About' element={<About/>}/>
-          <Route path='/Contact' element={<Contact/>}/>
-          <Route path='/Discover' element={<Discover/>}/>
+
+          {/* Admin only */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/add"
+            element={
+              <ProtectedRoute role="admin">
+                <AddProduct />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit/:id"
+            element={
+              <ProtectedRoute role="admin">
+                <EditProduct />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
-      </div>
-    </Router>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
-
-export default App;

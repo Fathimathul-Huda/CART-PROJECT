@@ -1,111 +1,52 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+
+const BASE_URL = "http://localhost:5000";
 
 export default function Register() {
-  const [user, setUser] = useState({ name: "", email: "", password: "" });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [email,setEmail] = useState("");
+  const [password,setPassword] = useState("");
+  const [msg,setMsg] = useState("");
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUser({ ...user, [name]: value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!user.name || !user.email || !user.password) {
-      setError("All fields are required");
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-    
+  const register = async () => {
+    setMsg("");
     try {
-      const response = await fetch("http://localhost:3000/auth/register", {
+      const res = await fetch(`${BASE_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(user),
+        body: JSON.stringify({ name, email, password }),
       });
 
-      const data = await response.json();
-      
-      if (response.ok) {
-        alert("✅ Registration successful! Redirecting to login...");
-        setUser({ name: "", email: "", password: "" });
-        setTimeout(() => navigate("/login"), 1500);
-      } else {
-        setError(data.message || "Registration failed");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      setError("Server connection error. Make sure backend is running.");
-    } finally {
-      setLoading(false);
+      if (!res.ok) throw new Error("Register failed");
+
+      setMsg("Registered successfully. You can login now.");
+    } catch (err) {
+      setMsg(err.message);
     }
   };
 
   return (
-    <div className="container mt-5">
-      <div className="card p-4 col-md-6 mx-auto shadow-sm">
-        <h3 className="text-center mb-4">📝 Create Account</h3>
-        
-        {error && <div className="alert alert-danger alert-dismissible fade show" role="alert">
-          {error}
-          <button type="button" className="btn-close" onClick={() => setError("")}></button>
-        </div>}
-        
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label className="form-label">Full Name</label>
-            <input 
-              type="text" 
-              name="name" 
-              value={user.name}
-              className="form-control" 
-              placeholder="Enter your full name" 
-              onChange={handleChange}
-              required
-            />
-          </div>
-          
-          <div className="mb-3">
-            <label className="form-label">Email</label>
-            <input 
-              type="email" 
-              name="email" 
-              value={user.email}
-              className="form-control" 
-              placeholder="Enter your email" 
-              onChange={handleChange}
-              required
-            />
-          </div>
-          
-          <div className="mb-3">
-            <label className="form-label">Password</label>
-            <input 
-              type="password" 
-              name="password" 
-              value={user.password}
-              className="form-control" 
-              placeholder="Enter a strong password" 
-              onChange={handleChange}
-              required
-            />
-          </div>
-          
-          <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-            {loading ? "⏳ Registering..." : "✅ Register"}
-          </button>
-        </form>
+    <div style={{ padding: 20 }}>
+      <h2>Register</h2>
+      {msg && <p>{msg}</p>}
 
-        <p className="text-center mt-3">
-          Already have an account? <a href="/login" className="text-decoration-none">Login here</a>
-        </p>
-      </div>
+      <input
+        placeholder="Name"
+        value={name}
+        onChange={e=>setName(e.target.value)}
+      /><br />
+      <input
+        placeholder="Email"
+        value={email}
+        onChange={e=>setEmail(e.target.value)}
+      /><br />
+      <input
+        placeholder="Password"
+        type="password"
+        value={password}
+        onChange={e=>setPassword(e.target.value)}
+      /><br />
+      <button onClick={register}>Sign Up</button>
     </div>
   );
 }

@@ -1,58 +1,58 @@
-import React, { useState } from "react";
-import { loginUser } from "../Api";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
-export default function Login({ setIsLoggedIn }) {
-  const [user, setUser] = useState({ email: "", password: "" });
+const BASE_URL = "http://localhost:5000";
+
+export default function Login() {
+  const { loginUser } = useContext(AuthContext);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
-  };
+  const handleLogin = async () => {
+    setError("");
+    try {
+      const res = await fetch(`${BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const data = await loginUser(user);
-    if (data.accessToken) {
-      localStorage.setItem("accessToken", data.accessToken);
-      alert("Login successful!");
-      setIsLoggedIn(true);
-      navigate("/");
-    } else {
-      alert(data.message || "Login failed!");
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data || "Login failed");
+      }
+
+      const data = await res.json();
+      // data: { message, token, role }
+      loginUser({ role: data.role }, data.token);
+
+      if (data.role === "admin") navigate("/admin");
+      else navigate("/");
+    } catch (err) {
+      setError(err.message);
     }
   };
 
   return (
-    <div className="container mt-5">
-      <div className="card p-4 col-md-6 mx-auto shadow-sm">
-        <h3 className="text-center mb-3">Login to Grocery Mart</h3>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            name="email"
-            className="form-control mb-3"
-            placeholder="Email"
-            onChange={handleChange}
-          />
-          <input
-            type="password"
-            name="password"
-            className="form-control mb-3"
-            placeholder="Password"
-            onChange={handleChange}
-          />
-          <button type="submit" className="btn btn-success w-100 mb-2">
-            Login
-          </button>
-        </form>
-        <p className="text-center">
-          Don’t have an account?{" "}
-          <Link to="/register" className="text-decoration-none">
-            Register here
-          </Link>
-        </p>
-      </div>
+    <div style={{ padding: 20 }}>
+      <h2>Login</h2>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      <input
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      /><br />
+      <input
+        placeholder="Password"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      /><br />
+      <button onClick={handleLogin}>Login</button>
     </div>
   );
 }
