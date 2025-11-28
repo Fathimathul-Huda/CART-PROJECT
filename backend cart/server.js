@@ -1,19 +1,30 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-
-const authRoutes = require("./routes/auth");
-const productRoutes = require("./routes/product");
-const cartRoutes = require("./routes/cart");
+const dotenv=require("dotenv")
+const port=5000;
+dotenv.config();
+mongoose.connect(process.env.MONGO_URI)
+.then(()=>{
+    console.log("Db connected succesfully");
+})
+.catch((err)=>{
+    console.log("db connected error",err)
+})
+const authRoutes = require("./Routes/authroutes");
+const productRoutes = require("./Routes/productroutes");
+const cartRoutes = require("./Routes/Cart");
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-mongoose.connect("mongodb://127.0.0.1:27017/shopdb").then(() => console.log("DB Connected"));
 
 app.use("/auth", authRoutes);
 app.use("/product", productRoutes);
 app.use("/cart", cartRoutes);
 
-app.listen(5000, () => console.log("Server running on port 5000"));
+app.listen(port, () =>{
+
+    console.log(`server running at port ${port}`);
+})
